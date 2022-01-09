@@ -1,50 +1,34 @@
-import sqlite3
+from dto import user_dto
 from model.user import User
+from sqlalchemy.orm import Session
 
 
-def add_user(user: User):
-    connection = sqlite3.connect("pyTest.db")
-    cursor = connection.cursor()
-    cursor.execute(f"INSERT INTO users VALUES {user.name} {user.password} {user.email}")
-    connection.commit()
-    connection.close()
+def select_user(user_id: int, db: Session):
+    return db.query(User).filter(User.id == user_id).first()
+
+
+def select_all(db: Session):
+    return db.query(User).all()
+
+
+def add_user(user: user_dto.User, db: Session):
+    db_user = User(name=user.name, password=user.password, email=user.email)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 
 # TODO write normal sql query
-def upgrade_user(user: User):
-    connection = sqlite3.connect("pyTest.db")
-    cursor = connection.cursor()
-    cursor.execute(f"UPDATE users SET NAME={user.name} WHERE id={user.id}")
-    connection.commit()
-    connection.close()
+def upgrade_user(user_id: int, user: user_dto.User, db: Session):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    db_user.name = user.name
+    db_user.password = user.password
+    db_user.email = user.email
+    db.commit()
 
 
-def delete_user(user_id: int):
-    connection = sqlite3.connect("pyTest.db")
-    cursor = connection.cursor()
-    cursor.execute(f"DELETE from users WHERE ID = {user_id}")
-    connection.commit()
-    connection.close()
-
-
-def select_user(user_id: int):
-    connection = sqlite3.connect("pyTest.db")
-    cursor = connection.cursor()
-    cursor.execute(f"SELECT * FROM users WHERE ID = {user_id}")
-    connection.commit()
-    connection.close()
-    return cursor
-
-
-def select_all():
-    connection = sqlite3.connect("pyTest.db")
-    cursor = connection.cursor()
-    cursor.execute(f"SELECT * FROM users")
-    connection.commit()
-    connection.close()
-    return cursor
-
-
-# def end_connection():
-#     connection.commit()
-#     connection.close()
+def delete_user(user_id: int, db: Session):
+    user = db.query(User).first(User.id == user_id)
+    db.delete(user)
+    db.commit()
