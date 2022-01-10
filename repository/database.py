@@ -6,13 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-def create_engine():
-    return create_engine("sqlite://pyTest.db")
+Engine = create_engine("sqlite:///./pyTest.db", connect_args={"check_same_thread": False})
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=Engine)
 
-def get_sessionlocal():
-    return sessionmaker(autocommit=False, autoflush=False, bind=create_engine())
-
-
-def get_base():
-    return declarative_base()
+Base = declarative_base()
